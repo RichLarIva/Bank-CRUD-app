@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create User</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            width: 300px;
+            margin: auto;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            font-size: 14px;
+            margin-bottom: 5px;
+            display: block;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            font-size: 14px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+        .success {
+            color: green;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <form method="POST" id="userForm">
+            <h2>Create User</h2>
+            <div class="input-group">
+                <label for="socialSecurityNumber">Social Security Number:</label>
+                <input type="text" id="socialSecurityNumber" required>
+            </div>
+            <div class="input-group">
+                <label for="fullName">Full Name:</label>
+                <input type="text" id="fullName" required>
+            </div>
+            <button type="submit">Create User</button>
+            <div id="responseMessage"></div>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById("userForm").addEventListener("submit", async function(event) {
+            event.preventDefault(); // Prevent form from reloading
+
+            const socialSecurityNumber = document.getElementById('socialSecurityNumber').value;
+            const fullName = document.getElementById('fullName').value;
+            const responseMessage = document.getElementById('responseMessage');
+
+            responseMessage.textContent = ''; // Clear previous messages
+
+            if (!socialSecurityNumber || !fullName) {
+                responseMessage.textContent = 'Please fill in all required fields.';
+                responseMessage.className = 'error';
+                return;
+            }
+
+            const userData = {
+                social_security_number: socialSecurityNumber,
+                full_name: fullName
+            };
+
+            console.log("Sending data to backend:", userData);
+
+            try {
+                const response = await fetch('http://127.0.0.1:6829/user', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(userData)
+                });
+
+                console.log("Response Status:", response.status);
+
+                const responseData = await response.json();
+                console.log("Response Data:", responseData);
+
+                if (response.ok) {
+                    responseMessage.textContent = responseData.message || 'User created successfully!';
+                    responseMessage.className = 'success';
+                } else {
+                    responseMessage.textContent = responseData.error || 'An error occurred.';
+                    responseMessage.className = 'error';
+                }
+            } catch (error) {
+                console.error("Fetch error:", error);
+                responseMessage.textContent = 'Failed to create user. Please try again.';
+                responseMessage.className = 'error';
+            }
+        });
+    </script>
+
+</body>
+</html>
