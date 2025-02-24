@@ -1,4 +1,4 @@
-# Bank CRUD Application  
+# Bank CRUD app 
 A simple bank API that simulates the basic workings of a bank, allowing users to manage accounts, transactions, and users. Currently a side project I am working on.
 
 ---
@@ -16,7 +16,7 @@ Before running this project, ensure you have the following installed:
 ## **1️⃣ Installation**
 ### **Clone the Repository**
 ```sh
-git clone https://github.com/RichLarIva/Bank-Account-CRUD-APPLICATION
+git clone https://github.com/RichLarIva/Bank-CRUD-app
 cd bank-crud-app
 npm install
 ```
