@@ -97,17 +97,25 @@ app.post('/bankaccount', (req, res) => {
     if (!user_id || balance === undefined) {
         return res.status(400).json({ error: "Missing required fields." });
     }
-
     // Generate a random account number
-    const account_number = Math.floor(Math.random() * 1000000000);
-
-    const query = `INSERT INTO bank_account (fk_user_id, account_number, balance) VALUES (?, ?, ?)`;
-    sql.query(connectionString, query, [user_id, account_number, balance], (err) => {
+    const generateAccountNumberQuery = `EXEC spGenerateAccountNumber`;
+    
+    sql.query(connectionString, generateAccountNumberQuery, (err, result) => {
         if (err) {
-            console.error("Error executing query:", err);
+            console.error("Error generating account number:", err);
             return res.status(500).json({ error: 'Database error' });
         }
-        res.status(200).json({ message: 'Bank account created successfully', account_number });
+
+        const account_number = result[0].accountNumber;
+
+        const query = `INSERT INTO bank_account (fk_user_id, account_number, balance) VALUES (?, ?, ?)`;
+        sql.query(connectionString, query, [user_id, account_number, balance], (err) => {
+            if (err) {
+                console.error("Error executing query:", err);
+                return res.status(500).json({ error: 'Database error' });
+            }
+            res.status(200).json({ message: 'Bank account created successfully', account_number });
+        });
     });
 });
 
