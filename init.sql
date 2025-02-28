@@ -59,6 +59,34 @@ BEGIN
 END;
 GO
 
+
+-- Create a procedure to generate a unique random account number
+CREATE OR ALTER PROCEDURE spGenerateAccountNumber
+AS
+BEGIN
+    DECLARE @accountNumber INT;
+    DECLARE @exists INT;
+
+    SET @exists = 1;
+
+    WHILE @exists = 1
+    BEGIN
+        -- Generate a random 9-digit account number
+        SET @accountNumber = FLOOR(RAND() * 1000000000);
+
+        -- Check if the account number already exists in the bank_account table
+        IF NOT EXISTS(SELECT 1 FROM bank_account WHERE account_number = @accountNumber)
+        BEGIN
+            SET @exists = 0;
+        END
+    END
+
+    -- return the unique account number
+    SELECT @accountNumber AS account_number;
+END;
+
+
+
 CREATE OR ALTER PROCEDURE spMakeTransaction
     @fromAccountNumber INT,
     @toAccountNumber INT,

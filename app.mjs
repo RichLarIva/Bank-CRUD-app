@@ -1,5 +1,6 @@
 import sql from 'msnodesqlv8';
 import express from 'express';
+import session from 'express-session';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -15,12 +16,38 @@ if (process.env.DB_USER && process.env.DB_PASSWORD) {
     connectionString += `;Uid=${process.env.DB_USER};Pwd=${process.env.DB_PASSWORD}`;
 }
 
+// app.use(session({
+//     secret: process.env.SESSION_SECRET,
+//     resave: false,
+//     saveUninitialized: true,
+//     cookie: { secure: false } // Set to true if using HTTPS
+// }));
+
 
 app.use(cors());
 
 app.use(express.urlencoded({extended: false}));
 // Middleware to parse JSON requests
 app.use(express.json());
+
+// // Sign in route
+// app.post('/signin', (req, res) => {
+//     const { userId } = req.body;
+//     if (!userId) {
+//         return res.status(400).json({ error: "Missing user ID" });
+//     }
+//     req.session.userId = userId;
+//     res.status(200).json({ message: 'Signed in successfully' });
+// });
+
+// // Middleware to check if user is signed in
+// function isAuthenticated(req, res, next) {
+//     if (req.session.userId) {
+//         next();
+//     } else {
+//         res.status(401).json({ error: 'Unauthorized' });
+//     }
+// }
 
 // Get all users
 app.get('/users', (req, res) => {
@@ -29,10 +56,11 @@ app.get('/users', (req, res) => {
         if (err) {
             console.error("Error executing query:", err);
             return res.status(500).json({ error: 'Database error' });
-        } 
+        }
         res.status(200).json(rows);
     });
 });
+
 
 app.get('/bankaccounts', (req, res) => {
     let { user, account_number, min_balance } = req.query; // Get query parameters
@@ -62,6 +90,26 @@ app.get('/bankaccounts', (req, res) => {
     });
 });
 
+
+app.post('/bankaccount', (req, res) => {
+    const { user_id, balance } = req.body;
+
+    if (!user_id || balance === undefined) {
+        return res.status(400).json({ error: "Missing required fields." });
+    }
+
+    // Generate a random account number
+    const account_number = Math.floor(Math.random() * 1000000000);
+
+    const query = `INSERT INTO bank_account (fk_user_id, account_number, balance) VALUES (?, ?, ?)`;
+    sql.query(connectionString, query, [user_id, account_number, balance], (err) => {
+        if (err) {
+            console.error("Error executing query:", err);
+            return res.status(500).json({ error: 'Database error' });
+        }
+        res.status(200).json({ message: 'Bank account created successfully', account_number });
+    });
+});
 
 
 
